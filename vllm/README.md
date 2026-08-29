@@ -17,49 +17,294 @@ This lab demonstrates why **vLLM is 10x faster** than raw HuggingFace transforme
 | 7 | Parameter Tuning | Optimize for different workloads |
 | 8 | Monitoring Dashboard | Build real-time metrics dashboard |
 
-## 📋 Prerequisites
+## 🛠️ Installation & Setup
+
+### Step 1: Clone the Repository
 
 ```bash
-# Python 3.10+
-python --version
+git clone https://github.com/chinmay4382/learn-vllm.git
+cd learn-vllm/vllm
+```
 
-# Required packages
+### Step 2: Create Virtual Environment (Recommended)
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate it
+# On Linux/Mac:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
+```
+
+### Step 3: Install Dependencies
+
+```bash
+# Upgrade pip
+pip install --upgrade pip
+
+# Install required packages
 pip install vllm torch transformers gradio aiohttp requests
 
-# Model will auto-download on first run (HuggingFaceTB/SmolLM-135M)
+# Verify installation
+python -c "import vllm; print(vllm.__version__)"
 ```
+
+### Step 4: Verify Python Version
+
+```bash
+python --version
+# Required: Python 3.10 or higher
+```
+
+### Step 5: Check Available Disk Space
+
+The SmolLM-135M model (~500MB) will auto-download on first run:
+
+```bash
+# Check available space
+df -h
+
+# Recommended: At least 2GB free space
+```
+
+---
+
+## 📋 Prerequisites
+
+Before running, make sure you have:
+
+- ✅ Python 3.10+ installed
+- ✅ pip package manager
+- ✅ 2GB+ free disk space (for model)
+- ✅ Internet connection (to download model)
+- ✅ 4GB+ RAM (minimum for CPU inference)
+
+**System Requirements:**
+- **CPU**: Modern processor recommended
+- **Memory**: 4GB+ RAM
+- **GPU**: Optional (project runs on CPU, GPU makes it faster)
+
+---
 
 ## 🚀 Quick Start
 
-### Run All Tasks in Sequence
+### First Time Running?
+
+**Start with Task 1 to verify everything works:**
 
 ```bash
-# Task 1: HuggingFace Baseline
+# From the vllm directory
 python hf_baseline.py
+```
 
-# Task 2: vLLM Inference (see speedup!)
+**Expected Output:**
+```
+=================================================================
+Task 1: Naive HuggingFace Inference - The Baseline
+=================================================================
+
+Model: HuggingFaceTB/SmolLM-135M
+Loading model...
+Model loaded successfully.
+
+Generating with HuggingFace transformers...
+
+--- RESULTS ---
+Generated text: Explain what a large language model is...
+Generated tokens: 50
+Total time: 15.23 seconds
+Tokens per second: 3.3 tok/s
+
+Task 1 Complete!
+```
+
+✅ **If you see output like above, you're ready to go!**
+
+---
+
+### Run All Tasks in Sequence
+
+**Choose one of three approaches:**
+
+#### Option A: Run Tasks 1-4 (No Server Required)
+```bash
+# These run independently - perfect for understanding concepts
+python hf_baseline.py       # ~15 seconds
+python vllm_inference.py    # ~10 seconds (see speedup!)
+python kv_cache_problem.py  # ~5 seconds (memory simulation)
+python paged_attention.py   # ~5 seconds (PagedAttention simulation)
+```
+
+#### Option B: Run Tasks 5-8 (Requires Server + Multiple Terminals)
+```bash
+# Terminal 1: Start the server (leaves running)
+python api_server.py
+# Wait for: "Server is ready!"
+# Endpoint: http://localhost:8000
+
+# Terminal 2: Run load test (keep server running)
+python multi_user_load.py
+# Output: Load test results at different concurrent user counts
+
+# Terminal 3: Run parameter tuning (keep server running)
+python tuning.py
+# Output: Performance with different configurations
+
+# Terminal 4: Launch monitoring dashboard (keep server running)
+python final.py
+# Open: http://localhost:7860 in browser
+```
+
+#### Option C: Full Run (All 8 Tasks)
+```bash
+# Terminal 1: Tasks 1-4 (one by one)
+python hf_baseline.py
 python vllm_inference.py
-
-# Task 3: KV Cache Simulation
 python kv_cache_problem.py
-
-# Task 4: PagedAttention Simulation
 python paged_attention.py
 
-# Task 5: Start API Server (leaves running in background)
+# Terminal 2: Start server
 python api_server.py
-# Server launches on http://localhost:8000
 
-# Task 6: Load Test the Server (in new terminal, requires Task 5 running)
+# Terminal 3: Tasks 5-8
 python multi_user_load.py
-
-# Task 7: Parameter Tuning (in new terminal, requires Task 5 running)
 python tuning.py
-
-# Task 8: Monitoring Dashboard (in new terminal, requires Task 5 running)
 python final.py
-# Dashboard launches on http://localhost:7860
 ```
+
+---
+
+### Running Individual Tasks
+
+```bash
+# Run any single task
+python <task_file>.py
+
+# Available tasks:
+python hf_baseline.py           # Task 1
+python vllm_inference.py        # Task 2
+python kv_cache_problem.py      # Task 3
+python paged_attention.py       # Task 4
+python api_server.py            # Task 5 (API server)
+python multi_user_load.py       # Task 6 (requires Task 5)
+python tuning.py                # Task 7 (requires Task 5)
+python final.py                 # Task 8 (requires Task 5)
+```
+
+---
+
+## ✅ Verification Checklist
+
+After installation, verify everything is working:
+
+### Check 1: Python & Environment
+```bash
+# Verify Python version
+python --version
+# Output should be 3.10+
+
+# Verify venv is active (should show (venv) in prompt)
+which python
+
+# Verify pip
+pip --version
+```
+
+### Check 2: Dependencies
+```bash
+# Test imports
+python -c "import vllm; print(f'vLLM: {vllm.__version__}')"
+python -c "import torch; print(f'PyTorch: {torch.__version__}')"
+python -c "import transformers; print(f'Transformers: {transformers.__version__}')"
+python -c "import gradio; print(f'Gradio: {gradio.__version__}')"
+
+# All should print version numbers without errors
+```
+
+### Check 3: Disk Space
+```bash
+df -h
+# Verify you have ~2GB free space
+```
+
+### Check 4: Network (for model download)
+```bash
+# Test internet connection
+python -c "import urllib.request; urllib.request.urlopen('https://huggingface.co')"
+# Should complete without error
+```
+
+### Check 5: Run Task 1 (Full Test)
+```bash
+python hf_baseline.py
+```
+
+**Expected:**
+- ✅ Model downloads (first time only, ~500MB)
+- ✅ Generates text
+- ✅ Shows timing (e.g., "3.3 tok/s")
+- ✅ Creates `/root/markers/hf_baseline.txt`
+
+If all checks pass, you're ready! 🎉
+
+---
+
+## 📌 Quick Reference
+
+### Common Commands
+
+```bash
+# Navigate to project
+cd learn-vllm/vllm
+
+# Activate environment
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# Run a specific task
+python <task_name>.py
+
+# Kill server on port 8000
+lsof -i :8000 | grep -v COMMAND | awk '{print $2}' | xargs kill -9
+
+# Kill dashboard on port 7860
+lsof -i :7860 | grep -v COMMAND | awk '{print $2}' | xargs kill -9
+
+# Check server health
+curl http://localhost:8000/health
+
+# View server logs
+tail -f /root/markers/vllm_server.log
+```
+
+### Task Execution Times
+
+| Task | Time | Type | Requires Server |
+|------|------|------|-----------------|
+| Task 1 | ~15s | Baseline | No |
+| Task 2 | ~10s | Optimization | No |
+| Task 3 | ~5s | Simulation | No |
+| Task 4 | ~5s | Simulation | No |
+| Task 5 | ~60s | Server startup | N/A |
+| Task 6 | ~30s | Load test | Yes |
+| Task 7 | ~120s | Parameter tuning | Yes |
+| Task 8 | Continuous | Dashboard | Yes |
+
+### Output Locations
+
+```
+/root/markers/
+├── hf_baseline.txt              # Task 1 metrics
+├── vllm_baseline.txt            # Task 2 metrics
+├── load_test_results.json       # Task 6 results
+├── tuning_results.json          # Task 7 results
+└── vllm_server.log              # Server logs
+```
+
+---
 
 ## 📝 Task Details
 
